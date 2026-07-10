@@ -1,0 +1,283 @@
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+.reg-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafaf8;
+  padding: 16px;
+}
+
+.reg-card {
+  display: flex;
+  width: 100%;
+  max-width: 860px;
+  min-height: 560px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+}
+
+.reg-left {
+  width: 42%;
+  background-color: #09090b;
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.reg-right {
+  flex: 1;
+  background-color: white;
+  padding: 48px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+/* ── Mobile branding — hidden on desktop ─────────────────────────────────── */
+
+.reg-mobile-brand {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.reg-mobile-brand-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(196, 146, 42, 0.12);
+  border: 1px solid rgba(196, 146, 42, 0.4);
+  color: #c4922a;
+  flex-shrink: 0;
+}
+
+.reg-mobile-brand-name {
+  font-weight: 700;
+  font-size: 28px;
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #09090b;
+  letter-spacing: 0.01em;
+}
+
+/* ── Form structure ──────────────────────────────────────────────────────── */
+
+.reg-form-header { margin-bottom: 20px; }
+
+.reg-form-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #09090b;
+  margin: 0 0 4px;
+}
+
+.reg-form-sub {
+  font-size: 14px;
+  color: #a1a1aa;
+  margin: 0;
+}
+
+.reg-form  { display: flex; flex-direction: column; gap: 14px; }
+.reg-field { display: flex; flex-direction: column; }
+
+.reg-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #3f3f46;
+  margin-bottom: 5px;
+}
+
+.reg-mismatch { font-size: 11px; color: #ef4444; margin-top: 4px; }
+
+.reg-error {
+  font-size: 13px;
+  color: #ef4444;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+.reg-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0;
+}
+.reg-divider-line { flex: 1; height: 1px; background: #f4f4f5; }
+.reg-divider-text { font-size: 12px; color: #d4d4d8; white-space: nowrap; }
+
+.reg-social {
+  display: flex;
+  gap: 10px;
+}
+.reg-social .login-btn-google,
+.reg-social .login-btn-github {
+  flex: 1;
+  font-size: 13px;
+}
+
+.reg-footer-text { font-size: 13px; color: #a1a1aa; text-align: center; margin-top: 4px; }
+.reg-footer-link { color: #09090b; font-weight: 500; text-decoration: none; }
+.reg-footer-link:hover { color: #3f3f46; }
+
+/* ── Success state ───────────────────────────────────────────────────────── */
+
+.reg-success        { text-align: center; padding: 32px 0; }
+.reg-success-icon   { font-size: 44px; margin-bottom: 12px; }
+.reg-success-title  { font-size: 16px; font-weight: 600; color: #09090b; margin: 0 0 6px; }
+.reg-success-sub    { font-size: 13px; color: #71717a; margin: 0; }
+
+/* ── Inputs ──────────────────────────────────────────────────────────────── */
+
+.reg-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1px solid #e4e4e7;
+  border-radius: 10px;
+  outline: none;
+  color: #09090b;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  background: white;
+}
+.reg-input:focus { border-color: #09090b; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+.reg-btn {
+  width: 100%;
+  padding: 11px;
+  background-color: #09090b;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  font-family: inherit;
+}
+.reg-btn:hover    { background-color: #3f3f46; }
+.reg-btn:disabled { background-color: #52525b; cursor: not-allowed; }
+.reg-btn.success-btn { background-color: #16a34a; }
+
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
+
+.input-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.strength-bar { height: 3px; border-radius: 2px; transition: width 0.3s, background 0.3s; }
+
+@media (max-width: 400px) { .input-row { grid-template-columns: 1fr; } }
+
+/* ── Tablet ───────────────────────────────────────────────────────────────── */
+
+@media (min-width: 641px) and (max-width: 860px) {
+  .reg-left  { width: 38%; padding: 36px 28px; }
+  .reg-right { padding: 36px 32px; }
+}
+
+/* ── Mobile dark theme ────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .reg-wrapper {
+    padding: 0;
+    align-items: stretch;
+    background-color: #0f0d08;
+  }
+
+  .reg-card {
+    border-radius: 0;
+    min-height: 100vh;
+    box-shadow: none;
+    flex-direction: column;
+  }
+
+  .reg-left { display: none; }
+
+  .reg-right {
+    background-color: #0f0d08;
+    padding: 52px 24px 92px;
+    justify-content: flex-start;
+    min-height: 100vh;
+  }
+
+  /* Show branding */
+  .reg-mobile-brand { display: flex; }
+  .reg-mobile-brand-name { color: rgba(255, 255, 255, 0.95); }
+
+  /* Form header */
+  .reg-form-title { color: rgba(255, 255, 255, 0.92); font-size: 20px; }
+  .reg-form-sub   { color: rgba(255, 255, 255, 0.37); }
+
+  /* Labels */
+  .reg-label { color: rgba(255, 255, 255, 0.52); }
+
+  /* Inputs */
+  .reg-input {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .reg-input:focus {
+    border-color: rgba(196, 146, 42, 0.55);
+    box-shadow: 0 0 0 3px rgba(196, 146, 42, 0.08);
+  }
+  .reg-input::placeholder { color: rgba(255, 255, 255, 0.27); }
+
+  /* Error / mismatch */
+  .reg-error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+  }
+  .reg-mismatch { color: #f87171; }
+
+  /* Primary CTA → dorado */
+  .reg-btn {
+    background: #c4922a;
+    color: #0f0d08;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 13px;
+  }
+  .reg-btn:hover    { background: #d4a53d; }
+  .reg-btn:disabled { background: rgba(196, 146, 42, 0.35); color: rgba(15,13,8,0.5); }
+
+  /* Divider */
+  .reg-divider-line { background: rgba(255, 255, 255, 0.07); }
+  .reg-divider-text { color: rgba(255, 255, 255, 0.22); }
+
+  /* Social */
+  .reg-social .login-btn-google,
+  .reg-social .login-btn-github {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.68);
+  }
+  .reg-social .login-btn-google:hover,
+  .reg-social .login-btn-github:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  /* Footer */
+  .reg-footer-text { color: rgba(255, 255, 255, 0.35); }
+  .reg-footer-link { color: #c4922a; }
+  .reg-footer-link:hover { color: #d4a53d; }
+
+  /* Success */
+  .reg-success-title { color: rgba(255, 255, 255, 0.9); }
+  .reg-success-sub   { color: rgba(255, 255, 255, 0.4); }
+}

@@ -1,0 +1,58 @@
+.oc-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafaf8;
+  padding: 24px;
+}
+.oc-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+  padding: 56px 48px;
+  width: 100%;
+  max-width: 460px;
+  text-align: center;
+}
+@media (max-width: 480px) {
+  .oc-wrapper { padding: 16px; padding-bottom: 76px; }
+  .oc-card { padding: 40px 24px; }
+}
+.check-circle {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: #f0fdf4;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+}
+.progress-bar {
+  height: 3px;
+  background: #f4f4f5;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+.progress-fill {
+  height: 100%;
+  background: #09090b;
+  border-radius: 2px;
+  animation: progress 8s linear forwards;
+}
+@keyframes progress {
+  from { width: 0% }
+  to { width: 100% }
+}
+.trust-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+.trust-pill {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #71717a;
+  background: #f9f9f9; border-radius: 20px;
+  padding: 6px 12px;
+}

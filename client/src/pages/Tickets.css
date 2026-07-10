@@ -1,0 +1,13 @@
+.tickets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.ticket-card {
+  background: white; border: 1px solid #f0f0f0; border-radius: 14px; padding: 20px;
+  transition: box-shadow 0.2s;
+}
+.ticket-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+.ticket-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+  background: #f0fdf4; color: #16a34a;
+}
+.skel { background: #f0f0f0; border-radius: 8px; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }

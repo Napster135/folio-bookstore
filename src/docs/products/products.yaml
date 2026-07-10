@@ -1,0 +1,403 @@
+paths:
+
+  /api/products:
+    get:
+      summary: Obtener todos los productos
+      description: >
+        Devuelve una lista paginada de productos. Acepta filtros por categoría,
+        búsqueda de texto y ordenamiento por precio. No requiere autenticación.
+      tags:
+        - Productos
+      parameters:
+        - name: page
+          in: query
+          description: Número de página (por defecto 1)
+          schema:
+            type: integer
+            default: 1
+        - name: query
+          in: query
+          description: Filtrar por categoría exacta (ej. "Ficcion", "Historia")
+          schema:
+            type: string
+        - name: search
+          in: query
+          description: Búsqueda de texto libre en título y descripción
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: Ordenar por precio ("asc" o "desc")
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        "200":
+          description: Productos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductsListResponse"
+        "500":
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      summary: Crear un nuevo producto
+      description: >
+        Agrega un nuevo producto al catálogo. Requiere rol **premium** o **admin**.
+        El campo `createdBy` se asigna automáticamente al usuario autenticado.
+      tags:
+        - Productos
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+            example:
+              title: "El Gran Gatsby"
+              description: "Novela clásica de F. Scott Fitzgerald"
+              price: 18.99
+              thumbnail: "https://covers.openlibrary.org/b/id/12345-L.jpg"
+              code: "GG-001"
+              stock: 30
+              status: true
+              category: "Ficcion"
+              author: "F. Scott Fitzgerald"
+      responses:
+        "201":
+          description: Producto creado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Registered succesfully!
+                  payload:
+                    $ref: "#/components/schemas/Product"
+        "401":
+          description: No autenticado o sin permisos suficientes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedResponse"
+        "500":
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/products/{pid}:
+    get:
+      summary: Obtener un producto por ID
+      description: Devuelve el detalle completo de un producto. No requiere autenticación.
+      tags:
+        - Productos
+      parameters:
+        - name: pid
+          in: path
+          required: true
+          description: ID de MongoDB del producto
+          schema:
+            type: string
+            example: 6a0babb2c032477d7c24e67e
+      responses:
+        "200":
+          description: Producto obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product:
+                    $ref: "#/components/schemas/Product"
+                  user:
+                    $ref: "#/components/schemas/SessionUser"
+                  isAdmin:
+                    type: boolean
+                  isPremium:
+                    type: boolean
+        "500":
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      summary: Actualizar un producto
+      description: Actualiza los campos de un producto existente. Requiere rol **premium** o **admin**.
+      tags:
+        - Productos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: pid
+          in: path
+          required: true
+          description: ID de MongoDB del producto
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pid, updates]
+              properties:
+                pid:
+                  type: string
+                  description: ID del producto a actualizar
+                updates:
+                  type: object
+                  description: Campos a modificar
+                  properties:
+                    title:
+                      type: string
+                    description:
+                      type: string
+                    price:
+                      type: number
+                    stock:
+                      type: integer
+                    thumbnail:
+                      type: string
+                    category:
+                      type: string
+                    status:
+                      type: boolean
+      responses:
+        "200":
+          description: Producto actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: string
+        "401":
+          description: Sin permisos suficientes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedResponse"
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error interno del servidor
+
+    delete:
+      summary: Eliminar un producto
+      description: >
+        Elimina un producto del catálogo. Requiere rol **premium** o **admin**.
+        Si usuarios premium tienen el producto en su carrito, se les notifica por email
+        y el producto es removido de sus carritos automáticamente.
+      tags:
+        - Productos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: pid
+          in: path
+          required: true
+          description: ID de MongoDB del producto
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Producto eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Producto borrado exitosamente
+                  payload:
+                    $ref: "#/components/schemas/Product"
+        "401":
+          description: Sin permisos suficientes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedResponse"
+        "500":
+          description: Error interno del servidor
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Sesión de Express almacenada en cookie
+
+  schemas:
+
+    Product:
+      type: object
+      description: Producto del catálogo de Folio
+      properties:
+        _id:
+          type: string
+          description: ID único de MongoDB
+          example: 6a0babb2c032477d7c24e67e
+        title:
+          type: string
+          description: Título del libro
+          example: A Tale of Two Cities
+        description:
+          type: string
+          description: Descripción del libro
+          example: Novela histórica de Charles Dickens
+        price:
+          type: number
+          format: float
+          description: Precio en USD
+          example: 17.99
+        thumbnail:
+          type: string
+          description: URL de la imagen de portada
+          example: https://covers.openlibrary.org/b/id/13301713-L.jpg
+        code:
+          type: string
+          description: Código único del producto
+          example: TALE-001
+        stock:
+          type: integer
+          description: Unidades disponibles
+          example: 25
+        status:
+          type: boolean
+          description: Producto activo (true) o inactivo (false)
+          default: true
+          example: true
+        category:
+          type: string
+          description: Categoría del producto
+          example: Ficcion
+        author:
+          type: string
+          description: Nombre del autor
+          example: Charles Dickens
+        createdBy:
+          type: string
+          description: ID del usuario que creó el producto
+          example: 656d372669f3489a93048afe
+
+    ProductInput:
+      type: object
+      required: [title, description, price, thumbnail, code, stock, category]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        thumbnail:
+          type: string
+        code:
+          type: string
+        stock:
+          type: integer
+        status:
+          type: boolean
+          default: true
+        category:
+          type: string
+        author:
+          type: string
+
+    ProductsListResponse:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        hasNextPage:
+          type: boolean
+          example: true
+        hasPrevPage:
+          type: boolean
+          example: false
+        page:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 4
+        totalDocs:
+          type: integer
+          example: 32
+        categories:
+          type: array
+          items:
+            type: string
+          example: [Ficcion, Historia, Tecnico]
+        user:
+          $ref: "#/components/schemas/SessionUser"
+        isAdmin:
+          type: boolean
+          example: false
+        isPremium:
+          type: boolean
+          example: false
+
+    SessionUser:
+      type: object
+      nullable: true
+      description: Datos básicos del usuario autenticado (null si no hay sesión)
+      properties:
+        user:
+          type: string
+          description: Nombre completo (first_name + last_name)
+          example: Vic Pacheco
+        role:
+          type: string
+          enum: [user, premium, admin]
+          example: user
+        cartId:
+          type: string
+          description: ID del carrito asociado al usuario
+          example: 656d372669f3489a93048afe
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Error interno del servidor
+
+    UnauthorizedResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: Unauthorized
+        message:
+          type: string
+          example: Unauthorized to do this action
+        code:
+          type: integer
+          example: 401

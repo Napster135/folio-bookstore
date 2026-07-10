@@ -1,0 +1,964 @@
+/* ── Floating Button ─────────────────────────────────────────────────────── */
+
+.concierge-fab {
+  position: fixed;
+  bottom: 20px; /* flush with the edge — pages without a BottomNav */
+  right: 16px;
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #09090b;
+  border: 1px solid rgba(196, 146, 42, 0.45);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(196, 146, 42, 0.1);
+  transition: all 0.22s cubic-bezier(0.25, 0.1, 0.25, 1);
+  white-space: nowrap;
+}
+
+/* When a <BottomNav/> is actually mounted in the DOM, sit above it instead.
+   Driven by a body class toggled from BottomNav's own effect (not :has()
+   — that selector didn't get picked up under Chrome's device-toolbar
+   emulation) so this reacts to the real DOM regardless of route or auth
+   state (e.g. /favorites only renders BottomNav once logged in). */
+@media (max-width: 640px) {
+  body.has-bottom-nav .concierge-fab {
+    bottom: 84px;
+  }
+
+  /* Product pages show a sticky "Agregar al carrito" bar in this same
+     corner — avoid two competing floating actions on a small screen */
+  body.has-sticky-cta .concierge-fab {
+    display: none;
+  }
+}
+
+.concierge-fab:hover {
+  background: #1a1208;
+  border-color: rgba(196, 146, 42, 0.7);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 20px rgba(196, 146, 42, 0.12);
+  transform: translateY(-1px);
+  color: #e8c97a;
+}
+
+.concierge-fab-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+@media (min-width: 641px) {
+  .concierge-fab {
+    bottom: 24px;
+    right: 24px;
+  }
+}
+
+/* ── Panel Backdrop ───────────────────────────────────────────────────────── */
+
+.concierge-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+  z-index: 390;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.concierge-backdrop.open { opacity: 1; pointer-events: auto; }
+
+/* ── Panel ────────────────────────────────────────────────────────────────── */
+
+.concierge-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: 100vw;
+  z-index: 400;
+  background: #faf7f2;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(105%);
+  opacity: 0;
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.22s ease;
+  box-shadow: -12px 0 60px rgba(0, 0, 0, 0.22);
+}
+.concierge-panel.open { transform: translateX(0); opacity: 1; }
+
+@media (max-width: 640px) {
+  .concierge-panel {
+    width: 100vw;
+    height: 100dvh;
+    bottom: auto;
+  }
+}
+
+/* ── Panel Header ─────────────────────────────────────────────────────────── */
+
+.concierge-panel-header {
+  background: #09090b;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(196, 146, 42, 0.18);
+}
+
+.concierge-panel-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(196, 146, 42, 0.1);
+  border: 1px solid rgba(196, 146, 42, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.concierge-panel-title-wrap { flex: 1; min-width: 0; }
+
+.concierge-panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.concierge-panel-subtitle {
+  font-size: 11px;
+  color: rgba(196, 146, 42, 0.7);
+  margin: 1px 0 0;
+  letter-spacing: 0.03em;
+}
+
+.concierge-panel-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.concierge-panel-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Book Context Card ────────────────────────────────────────────────────── */
+
+.concierge-context-card {
+  background: rgba(196, 146, 42, 0.05);
+  border-bottom: 1px solid rgba(196, 146, 42, 0.14);
+  padding: 12px 20px;
+  flex-shrink: 0;
+}
+
+.concierge-context-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #a09070;
+  margin: 0 0 8px;
+}
+
+.concierge-context-book {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.concierge-context-thumb {
+  width: 34px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.18));
+}
+
+.concierge-context-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.concierge-context-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1208;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.concierge-context-author {
+  font-size: 11px;
+  color: #71717a;
+  margin: 0;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.concierge-context-cat {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #92400e;
+  background: rgba(196, 146, 42, 0.1);
+  border-radius: 999px;
+  padding: 2px 7px;
+  margin-top: 2px;
+}
+
+/* ── Messages Scroll Area ─────────────────────────────────────────────────── */
+
+.concierge-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+.concierge-messages::-webkit-scrollbar { width: 4px; }
+.concierge-messages::-webkit-scrollbar-track { background: transparent; }
+.concierge-messages::-webkit-scrollbar-thumb {
+  background: rgba(196, 146, 42, 0.22);
+  border-radius: 2px;
+}
+
+/* ── Quick Actions ────────────────────────────────────────────────────────── */
+
+.concierge-quick-actions {
+  padding: 0 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.concierge-quick-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a09070;
+  margin: 0 0 4px;
+}
+
+.concierge-quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.concierge-quick-btn {
+  background: #ffffff;
+  border: 1px solid #e8e2d8;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #1a1208;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  line-height: 1.35;
+  transition: all 0.18s;
+  box-shadow: 0 1px 3px rgba(26, 18, 8, 0.04);
+}
+.concierge-quick-btn:hover {
+  border-color: rgba(196, 146, 42, 0.5);
+  background: rgba(196, 146, 42, 0.04);
+  color: #92400e;
+  box-shadow: 0 2px 10px rgba(196, 146, 42, 0.12);
+  transform: translateY(-1px);
+}
+
+/* ── Message Bubbles ─────────────────────────────────────────────────────── */
+
+.concierge-msg {
+  display: flex;
+  gap: 9px;
+  max-width: 100%;
+}
+.concierge-msg.user { flex-direction: row-reverse; }
+
+.concierge-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(196, 146, 42, 0.1);
+  border: 1px solid rgba(196, 146, 42, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+.concierge-msg-body {
+  max-width: calc(100% - 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.concierge-msg-bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.concierge-msg.assistant .concierge-msg-bubble {
+  background: #ffffff;
+  color: #1a1208;
+  border: 1px solid #ece8e0;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 6px rgba(26, 18, 8, 0.07);
+  white-space: pre-line;
+}
+
+.concierge-msg.user .concierge-msg-bubble {
+  background: #1a1208;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom-right-radius: 4px;
+}
+
+/* ── Loading Dots ─────────────────────────────────────────────────────────── */
+
+.concierge-loading-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 3px 0;
+}
+.concierge-loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c4922a;
+  animation: concierge-dot 1.2s ease-in-out infinite;
+}
+.concierge-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.concierge-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes concierge-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ── Concierge Book Cards ────────────────────────────────────────────────── */
+
+.concierge-books {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.concierge-book-card {
+  background: #ffffff;
+  border: 1px solid #ece8e0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.concierge-book-card:hover {
+  border-color: rgba(196, 146, 42, 0.4);
+  box-shadow: 0 4px 16px rgba(26, 18, 8, 0.1);
+}
+.concierge-book-card.featured {
+  border-color: rgba(196, 146, 42, 0.45);
+  background: linear-gradient(to bottom, #fefcf7, #ffffff);
+  box-shadow: 0 2px 12px rgba(196, 146, 42, 0.1);
+}
+
+/* ── Featured badge ── */
+
+.concierge-book-featured-badge {
+  padding: 4px 12px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #92400e;
+  background: rgba(196, 146, 42, 0.1);
+  border-bottom: 1px solid rgba(196, 146, 42, 0.18);
+}
+
+/* ── Main clickable area ── */
+
+.concierge-book-card-main {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.concierge-book-card-main:hover { background: rgba(196, 146, 42, 0.03); }
+.concierge-book-card-main:focus-visible {
+  outline: 2px solid #c4922a;
+  outline-offset: -2px;
+}
+
+.concierge-book-thumb {
+  width: 52px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #f7f4ee;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(26, 18, 8, 0.18));
+}
+
+.concierge-book-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1px 0;
+}
+
+.concierge-book-category {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a7a65;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.concierge-book-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1a1208;
+  margin: 2px 0 1px;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.concierge-book-author {
+  font-size: 11px;
+  color: #71717a;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.concierge-book-desc {
+  font-size: 10.5px;
+  color: #8a8a94;
+  line-height: 1.45;
+  margin-top: 3px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.concierge-book-price {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #c4922a;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+}
+
+/* ── Action bar ── */
+
+.concierge-book-actions {
+  display: flex;
+  gap: 6px;
+  padding: 0 10px 10px;
+  border-top: 1px solid #f4f0ea;
+  padding-top: 8px;
+}
+
+.concierge-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid #e4e0d8;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  color: #52525b;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.concierge-action-btn:hover {
+  border-color: #09090b;
+  color: #09090b;
+  background: #f9f9f9;
+}
+
+.concierge-action-btn.cart {
+  background: #09090b;
+  color: white;
+  border-color: #09090b;
+}
+.concierge-action-btn.cart:hover:not(:disabled) {
+  background: #c4922a;
+  border-color: #c4922a;
+  color: #09090b;
+}
+.concierge-action-btn.cart.added {
+  background: #15803d;
+  border-color: #15803d;
+  color: white;
+}
+.concierge-action-btn.cart:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.concierge-action-btn.fav {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+}
+.concierge-action-btn.fav.active {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.04);
+}
+.concierge-action-btn.fav:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.04);
+}
+
+/* ── Refine CTA ── */
+
+.concierge-refine {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: #f7f4ee;
+  border: 1px solid #e8e2d8;
+  border-radius: 12px;
+  margin-top: 2px;
+}
+
+.concierge-refine-text {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1a1208;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.concierge-refine-hint {
+  font-size: 11.5px;
+  color: #71717a;
+  margin: 2px 0 0;
+}
+
+.concierge-refine-list {
+  margin: 0 0 6px;
+  padding-left: 16px;
+  font-size: 11.5px;
+  color: #52525b;
+  line-height: 1.9;
+}
+
+.concierge-refine-btn {
+  align-self: flex-start;
+  background: #1a1208;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+  margin-top: 2px;
+}
+.concierge-refine-btn:hover {
+  background: #c4922a;
+  color: #1a1208;
+}
+
+/* ── Refine chips ── */
+
+.concierge-refine-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #e8e2d8;
+}
+
+.concierge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(196, 146, 42, 0.28);
+  background: transparent;
+  color: rgba(26, 18, 8, 0.68);
+  font-size: 11.5px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.concierge-chip:hover {
+  background: rgba(196, 146, 42, 0.07);
+  border-color: rgba(196, 146, 42, 0.5);
+  color: #1a1208;
+}
+
+.concierge-chip--reset {
+  border-color: rgba(239, 68, 68, 0.2);
+  color: rgba(185, 28, 28, 0.65);
+}
+
+.concierge-chip--reset:hover {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.38);
+  color: #dc2626;
+}
+
+/* ── Panel Input ──────────────────────────────────────────────────────────── */
+
+.concierge-panel-input-area {
+  padding: 12px 16px 18px;
+  border-top: 1px solid #e8e2d8;
+  background: #faf7f2;
+  flex-shrink: 0;
+}
+
+.concierge-input-form {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.concierge-input {
+  flex: 1;
+  border: 1.5px solid #ddd7cc;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-family: inherit;
+  background: #ffffff;
+  color: #1a1208;
+  resize: none;
+  outline: none;
+  min-height: 42px;
+  max-height: 100px;
+  overflow-y: auto;
+  line-height: 1.45;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.concierge-input:focus {
+  border-color: rgba(196, 146, 42, 0.5);
+  box-shadow: 0 0 0 3px rgba(196, 146, 42, 0.08);
+}
+.concierge-input::placeholder { color: #a09070; }
+.concierge-input:disabled { opacity: 0.6; }
+
+.concierge-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #1a1208;
+  border: none;
+  color: #c4922a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+.concierge-send-btn:hover:not(:disabled) {
+  background: #c4922a;
+  color: #1a1208;
+}
+.concierge-send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Concierge Full Page ─────────────────────────────────────────────────── */
+
+.concierge-page {
+  min-height: 100vh;
+  background: #f0ead8;
+  display: flex;
+  flex-direction: column;
+}
+
+.concierge-page-hero {
+  background: linear-gradient(160deg, #09090b 0%, #1a1208 60%, #251c0d 100%);
+  padding: 56px 24px 52px;
+  text-align: center;
+}
+
+.concierge-page-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c4922a;
+  border: 1px solid rgba(196, 146, 42, 0.3);
+  background: rgba(196, 146, 42, 0.08);
+  padding: 5px 14px;
+  border-radius: 999px;
+  margin-bottom: 20px;
+}
+
+.concierge-page-hero h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(24px, 5vw, 40px);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.93);
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.concierge-page-hero p {
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.48);
+  margin: 0 auto;
+  max-width: 440px;
+  line-height: 1.6;
+}
+
+.concierge-page-body {
+  flex: 1;
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Page input box */
+.concierge-page-input-wrap {
+  background: #ffffff;
+  border: 1.5px solid #ddd7cc;
+  border-radius: 16px;
+  padding: 4px 6px 6px 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(26, 18, 8, 0.08);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.concierge-page-input-wrap:focus-within {
+  border-color: rgba(196, 146, 42, 0.5);
+  box-shadow: 0 4px 20px rgba(196, 146, 42, 0.1), 0 0 0 3px rgba(196, 146, 42, 0.07);
+}
+
+.concierge-page-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  font-family: inherit;
+  color: #1a1208;
+  padding: 10px 0;
+  resize: none;
+  min-height: 46px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.45;
+}
+.concierge-page-input::placeholder { color: #a09070; }
+.concierge-page-input:disabled { opacity: 0.6; }
+
+.concierge-page-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #1a1208;
+  border: none;
+  color: #c4922a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  align-self: flex-end;
+  transition: all 0.18s;
+}
+.concierge-page-send-btn:hover:not(:disabled) {
+  background: #c4922a;
+  color: #1a1208;
+}
+.concierge-page-send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Quick actions pills */
+.concierge-page-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.concierge-page-quick-btn {
+  background: #ffffff;
+  border: 1px solid #ddd7cc;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1208;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s;
+}
+.concierge-page-quick-btn:hover:not(:disabled) {
+  border-color: rgba(196, 146, 42, 0.5);
+  background: rgba(196, 146, 42, 0.05);
+  color: #92400e;
+}
+.concierge-page-quick-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Page messages */
+.concierge-page-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.concierge-page-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.concierge-page-msg.user  { align-items: flex-end; }
+.concierge-page-msg.assistant { align-items: flex-start; }
+
+.concierge-page-msg-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.concierge-page-msg-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(196, 146, 42, 0.1);
+  border: 1px solid rgba(196, 146, 42, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.concierge-page-msg-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8a7a65;
+  letter-spacing: 0.02em;
+}
+
+.concierge-page-msg-bubble {
+  max-width: 580px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.concierge-page-msg.assistant .concierge-page-msg-bubble {
+  background: #ffffff;
+  color: #1a1208;
+  border: 1px solid #ece8e0;
+  border-top-left-radius: 4px;
+  box-shadow: 0 2px 8px rgba(26, 18, 8, 0.06);
+}
+.concierge-page-msg.user .concierge-page-msg-bubble {
+  background: #1a1208;
+  color: rgba(255, 255, 255, 0.9);
+  border-top-right-radius: 4px;
+}
+
+.concierge-page-msg-books {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 580px;
+}
+
+@media (max-width: 480px) {
+  .concierge-page-msg-books {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Navbar link accent */
+.nav-link-concierge {
+  color: rgba(196, 146, 42, 0.75) !important;
+}
+.nav-link-concierge:hover { color: #e8c97a !important; }
+.nav-link-concierge.active { color: #e8c97a !important; }
+
+/* ── Mobile keyboard fix ─────────────────────────────────────────────────── */
+/* font-size >= 16px prevents iOS auto-zoom on input focus (which shifts panel) */
+@media (max-width: 640px) {
+  .concierge-input { font-size: 16px; }
+}

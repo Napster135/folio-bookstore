@@ -1,0 +1,476 @@
+/* ── BookCard ─────────────────────────────────────────────────────────────── */
+
+.book-card {
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ece8e0;
+  box-shadow:
+    0 1px 3px rgba(26, 18, 8, 0.06),
+    0 4px 16px rgba(26, 18, 8, 0.08);
+  transition:
+    transform 0.30s cubic-bezier(0.25, 0.1, 0.25, 1),
+    box-shadow 0.30s cubic-bezier(0.25, 0.1, 0.25, 1),
+    border-color 0.30s ease;
+  will-change: transform;
+}
+
+.book-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(196, 146, 42, 0.45);
+  box-shadow:
+    0 12px 36px rgba(26, 18, 8, 0.14),
+    0 2px 8px rgba(26, 18, 8, 0.08),
+    0 0 0 1px rgba(196, 146, 42, 0.18);
+}
+
+/* ── Image ── */
+
+.book-img-wrap {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  background: #f7f4ee;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 14px 12px;
+}
+
+.book-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 3px;
+  filter:
+    drop-shadow(0 8px 20px rgba(26, 18, 8, 0.22))
+    drop-shadow(0 2px 6px rgba(26, 18, 8, 0.12));
+  transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.book-card:hover .book-img {
+  transform: scale(1.04);
+}
+
+/* ── Fav button ── */
+
+.fav-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 1px 6px rgba(26, 18, 8, 0.10);
+  transition: opacity 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s;
+  opacity: 0;
+  z-index: 2;
+}
+
+.book-card:hover .fav-btn,
+.fav-btn.is-fav {
+  opacity: 1;
+}
+
+.fav-btn:hover {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(26, 18, 8, 0.14);
+  transform: scale(1.12);
+}
+
+.fav-btn.fav-anim {
+  transform: scale(1.22);
+}
+
+/* ── Share button ── */
+
+.share-btn {
+  position: absolute;
+  top: 44px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 1px 6px rgba(26, 18, 8, 0.10);
+  transition: opacity 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s;
+  opacity: 0;
+  z-index: 2;
+  color: #52525b;
+}
+
+.book-card:hover .share-btn {
+  opacity: 1;
+}
+
+.share-btn:hover {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(26, 18, 8, 0.14);
+  transform: scale(1.12);
+}
+
+/* ── Stock badge ── */
+
+.stock-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.92);
+  color: #92400e;
+  border: 1px solid rgba(196, 146, 42, 0.35);
+  padding: 3px 8px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.stock-badge.out {
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+/* ── Content ── */
+
+.book-content {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.book-category {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a7a65;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1a1208;
+  margin: 0 0 3px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  min-height: calc(1.35em * 2); /* cards iguales: 1 línea siempre reserva espacio de 2 */
+}
+
+.book-title-es {
+  font-size: 11.5px;
+  color: rgba(196, 146, 42, 0.75);
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: italic;
+}
+
+.book-author {
+  font-size: 12px;
+  color: #71717a;
+  margin: 2px 0 0;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Footer ── */
+
+.book-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.book-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #c4922a;
+  letter-spacing: -0.03em;
+}
+
+/* Ícono del carrito: visible solo en mobile (override en @media) */
+.cart-pill-icon { display: none; }
+.cart-pill-text { display: inline; }
+
+/* Cart button — siempre visible */
+.cart-pill {
+  background: #1a1208;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 1;
+  pointer-events: auto;
+  transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cart-pill:hover:not(:disabled) {
+  background: #c4922a;
+  color: #1a1208;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(196, 146, 42, 0.30);
+}
+
+.cart-pill.added {
+  background: #15803d;
+  color: white;
+  pointer-events: none;
+}
+
+.cart-pill:disabled:not(.added) {
+  background: #e8e4dc;
+  color: #a1a1aa;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Compact variant ── */
+
+.book-card.compact .book-img-wrap { padding: 12px 10px 8px; }
+.book-card.compact .book-content  { padding: 10px 12px 12px; }
+.book-card.compact .book-title    { font-size: 13px; }
+.book-card.compact .book-price    { font-size: 14px; }
+
+/* ── Mobile ── */
+
+@media (max-width: 640px) {
+  /* ── Card: vertical, premium, libro real ── */
+  .book-card {
+    background: #e8e2d4;
+    border-radius: 16px;
+    border: 1px solid rgba(196, 146, 42, 0.16);
+    box-shadow:
+      0 6px 24px rgba(0, 0, 0, 0.38),
+      0 1px 4px rgba(0, 0, 0, 0.22);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .book-card:hover {
+    border-color: rgba(196, 146, 42, 0.42);
+    box-shadow:
+      0 10px 32px rgba(0, 0, 0, 0.48),
+      0 0 0 1px rgba(196, 146, 42, 0.22);
+  }
+
+  /* ── Imagen: portada protagonista ── */
+  .book-img-wrap {
+    aspect-ratio: unset;
+    height: 138px;
+    padding: 12px 18px 10px;
+    background: #e8e2d4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    position: relative;
+  }
+  .book-img {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 2px;
+    filter:
+      drop-shadow(0 4px 10px rgba(0, 0, 0, 0.40))
+      drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25));
+  }
+
+  /* ── Bloque info: oscuro, curva superior ── */
+  .book-content {
+    background: #100d07;
+    border-radius: 12px 12px 0 0;
+    padding: 9px 10px 11px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* ── Categoría: pill editorial dorada ── */
+  .book-category {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #c4922a;
+    background: rgba(196, 146, 42, 0.1);
+    border: 1px solid rgba(196, 146, 42, 0.35);
+    border-radius: 999px;
+    padding: 2px 7px;
+    margin-bottom: 5px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Título ── */
+  .book-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.93);
+    line-height: 1.28;
+    margin: 0 0 3px;
+    min-height: unset;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── Título ES: oculto en mobile ── */
+  .book-title-es { display: none; }
+
+  /* ── Autor ── */
+  .book-author {
+    font-size: 8.5px;
+    font-style: italic;
+    color: rgba(210, 185, 145, 0.58);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Footer ── */
+  .book-footer {
+    margin-top: auto;
+    padding-top: 8px;
+    gap: 4px;
+  }
+
+  /* ── Precio ── */
+  .book-price {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #c4922a;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Wishlist: circular, fondo claro, sobre imagen ── */
+  .fav-btn {
+    opacity: 1;
+    width: 26px;
+    height: 26px;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.20);
+  }
+  .fav-btn:hover { background: #fff; }
+
+  /* ── Share: circular, a la izquierda del fav ── */
+  .share-btn {
+    opacity: 1;
+    width: 26px;
+    height: 26px;
+    top: 8px;
+    right: 38px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.20);
+    color: #52525b;
+  }
+  .share-btn:hover { background: #fff; }
+
+  /* ── Carrito: circular dorado ── */
+  .cart-pill-icon { display: block; }
+  .cart-pill-text { display: none; }
+  .cart-pill {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: transparent;
+    color: #c4922a;
+    border: 1px solid rgba(196, 146, 42, 0.45);
+    font-size: 0;
+  }
+  .cart-pill:hover:not(:disabled) {
+    background: rgba(196, 146, 42, 0.14);
+    color: #c4922a;
+    box-shadow: none;
+    transform: none;
+  }
+  .cart-pill.added {
+    background: rgba(34, 197, 94, 0.12);
+    color: #4ade80;
+    border-color: rgba(34, 197, 94, 0.25);
+  }
+  .cart-pill:disabled:not(.added) {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* ── Stock badge ── */
+  .stock-badge {
+    background: rgba(10, 8, 4, 0.78);
+    color: #c4922a;
+    border-color: rgba(196, 146, 42, 0.32);
+    font-size: 7.5px;
+    padding: 2px 5px;
+    bottom: 8px;
+    left: 8px;
+  }
+  .stock-badge.out {
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+}

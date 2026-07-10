@@ -1,0 +1,567 @@
+paths:
+
+  /api/carts:
+    post:
+      summary: Crear un nuevo carrito
+      description: >
+        Crea un carrito vacío. Normalmente se invoca automáticamente al registrar un usuario.
+        Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      responses:
+        "201":
+          description: Carrito creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartDocument"
+        "401":
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedResponse"
+        "400":
+          description: Error al crear el carrito
+
+  /api/carts/quantity/{cid}:
+    get:
+      summary: Obtener cantidad total de ítems en el carrito
+      description: >
+        Devuelve la suma de todas las cantidades de productos en el carrito.
+        Se usa para mostrar el badge del ícono del carrito. Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: ID del carrito
+          schema:
+            type: string
+            example: 656d372669f3489a93048afe
+      responses:
+        "200":
+          description: Cantidad obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quantity:
+                    type: integer
+                    description: Total de unidades en el carrito
+                    example: 7
+        "401":
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedResponse"
+        "500":
+          description: Error interno del servidor
+
+  /api/carts/{cid}:
+    get:
+      summary: Obtener productos del carrito
+      description: >
+        Devuelve la lista completa de productos en el carrito con título, precio,
+        imagen y cantidad. Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: ID del carrito
+          schema:
+            type: string
+            example: 656d372669f3489a93048afe
+      responses:
+        "200":
+          description: Productos obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+        "401":
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedResponse"
+        "500":
+          description: Error interno del servidor
+
+    delete:
+      summary: Vaciar el carrito
+      description: Elimina todos los productos del carrito. Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: ID del carrito
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Carrito vaciado exitosamente
+        "401":
+          description: No autenticado
+        "500":
+          description: Error interno del servidor
+
+  /api/carts/{cid}/product/{pid}:
+    post:
+      summary: Agregar un producto al carrito
+      description: >
+        Agrega el producto al carrito. Si el producto ya existe en el carrito,
+        incrementa su cantidad en 1. Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: ID del carrito
+          schema:
+            type: string
+            example: 656d372669f3489a93048afe
+        - name: pid
+          in: path
+          required: true
+          description: ID del producto a agregar
+          schema:
+            type: string
+            example: 6a0babb2c032477d7c24e67e
+      responses:
+        "200":
+          description: Producto agregado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        "401":
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedResponse"
+        "500":
+          description: Error interno del servidor
+
+    put:
+      summary: Actualizar la cantidad de un producto en el carrito
+      description: >
+        Establece la cantidad exacta de un producto en el carrito.
+        Si `qty` es 0, el producto es eliminado del carrito.
+        Válido entre 1 y 999. Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: ID del carrito
+          schema:
+            type: string
+        - name: pid
+          in: path
+          required: true
+          description: ID del producto
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qty]
+              properties:
+                qty:
+                  type: integer
+                  minimum: 1
+                  maximum: 999
+                  description: Nueva cantidad del producto
+                  example: 3
+      responses:
+        "200":
+          description: Cantidad actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        "400":
+          description: Cantidad inválida (debe ser entero entre 1 y 999)
+        "401":
+          description: No autenticado
+        "500":
+          description: Error interno del servidor
+
+    delete:
+      summary: Eliminar un producto del carrito
+      description: Remueve completamente un producto del carrito. Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: ID del carrito
+          schema:
+            type: string
+        - name: pid
+          in: path
+          required: true
+          description: ID del producto a eliminar
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Producto eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        "401":
+          description: No autenticado
+        "500":
+          description: Error interno del servidor
+
+  /api/carts/{cid}/checkout:
+    get:
+      summary: Obtener resumen de checkout
+      description: >
+        Devuelve el total y la lista de productos listos para comprar,
+        separando los que tienen stock insuficiente. Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: ID del carrito
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Datos de checkout obtenidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResponse"
+        "401":
+          description: No autenticado
+        "500":
+          description: Error interno del servidor
+
+  /api/carts/{cid}/purchase:
+    post:
+      summary: Iniciar pago (Stripe)
+      description: >
+        Calcula el total del carrito y crea un PaymentIntent de Stripe.
+        Devuelve el `client_secret` para completar el pago desde el frontend.
+        Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: ID del carrito
+          schema:
+            type: string
+      responses:
+        "200":
+          description: PaymentIntent creado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: object
+                    properties:
+                      client_secret:
+                        type: string
+                        description: Secret de Stripe para confirmar el pago desde el cliente
+                        example: pi_3OxZlL2eZvKYlo2C_secret_xyz
+                      purchaser:
+                        $ref: "#/components/schemas/SessionUser"
+        "400":
+          description: El total del carrito es 0 (carrito vacío o sin stock)
+        "401":
+          description: No autenticado
+        "500":
+          description: Error interno del servidor
+
+  /api/carts/{cid}/confirmPurchase:
+    post:
+      summary: Confirmar compra y generar ticket
+      description: >
+        Verifica el stock de cada producto, descuenta las unidades, genera un ticket
+        de compra y vacía el carrito. Los productos sin stock suficiente son omitidos.
+        Requiere autenticación.
+      tags:
+        - Carritos
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: ID del carrito
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Compra confirmada y ticket generado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: object
+                    properties:
+                      ticket:
+                        $ref: "#/components/schemas/Ticket"
+                  user:
+                    $ref: "#/components/schemas/SessionUser"
+        "401":
+          description: No autenticado
+        "500":
+          description: Error interno del servidor
+
+  /publicKey:
+    get:
+      summary: Obtener clave pública de Stripe
+      description: Devuelve la clave pública de Stripe para inicializar el SDK en el frontend.
+      tags:
+        - Carritos
+      responses:
+        "200":
+          description: Clave pública obtenida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  publicKey:
+                    type: string
+                    example: pk_test_51OxZlL2eZvKYlo2C...
+
+components:
+  schemas:
+
+    CartDocument:
+      type: object
+      description: Documento del carrito en MongoDB
+      properties:
+        _id:
+          type: string
+          example: 656d372669f3489a93048afe
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              product:
+                type: string
+                description: ID del producto referenciado
+              quantity:
+                type: integer
+                default: 1
+
+    CartItem:
+      type: object
+      description: Producto dentro del carrito (con datos populados)
+      properties:
+        _id:
+          type: string
+          description: ID del producto
+          example: 6a0babb2c032477d7c24e67e
+        title:
+          type: string
+          example: A Tale of Two Cities
+        price:
+          type: number
+          format: float
+          example: 17.99
+        thumbnail:
+          type: string
+          example: https://covers.openlibrary.org/b/id/13301713-L.jpg
+        quantity:
+          type: integer
+          description: Cantidad agregada al carrito
+          example: 2
+        createdBy:
+          type: string
+          description: Nombre del creador del producto
+          example: Vic Pacheco
+
+    CartResponse:
+      type: object
+      properties:
+        productsInCart:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+        productCreatedBy:
+          type: boolean
+          description: Indica si el usuario autenticado es creador de algún producto en el carrito
+          example: false
+        user:
+          type: object
+          properties:
+            cartId:
+              type: string
+            role:
+              type: string
+        isAdmin:
+          type: boolean
+          example: false
+        isPremium:
+          type: boolean
+          example: false
+
+    CheckoutResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/SessionUser"
+        total:
+          type: number
+          format: float
+          description: Total en USD de los productos con stock disponible
+          example: 134.45
+        products:
+          type: array
+          description: Productos disponibles para comprar
+          items:
+            type: object
+            properties:
+              product:
+                $ref: "#/components/schemas/CartItem"
+              quantity:
+                type: integer
+        outOfStockProducts:
+          type: array
+          description: Productos que no tienen stock suficiente
+          items:
+            type: object
+            properties:
+              product:
+                $ref: "#/components/schemas/CartItem"
+              quantity:
+                type: integer
+
+    Ticket:
+      type: object
+      description: Comprobante de compra generado tras confirmar un pago
+      properties:
+        _id:
+          type: string
+          example: 64f3a1b2c9e7d3a5b8c0e1f2
+        code:
+          type: string
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        purchase_datetime:
+          type: string
+          format: date-time
+          example: "2026-06-09T19:30:00.000Z"
+        amount:
+          type: number
+          description: Total final en USD (con descuento aplicado)
+          example: 121.00
+        subtotal:
+          type: number
+          description: Subtotal antes del descuento
+          example: 134.45
+        discountRate:
+          type: number
+          description: Porcentaje de descuento (0.1 = 10% premium)
+          example: 0.1
+        discountAmount:
+          type: number
+          description: Monto descontado en USD
+          example: 13.45
+        purchaser:
+          type: string
+          description: ID del usuario (null en compras guest)
+        items:
+          type: array
+          description: Snapshot de los productos comprados
+          items:
+            $ref: "#/components/schemas/TicketItem"
+
+    TicketItem:
+      type: object
+      properties:
+        title:
+          type: string
+          example: A Tale of Two Cities
+        quantity:
+          type: integer
+          example: 2
+        unitPrice:
+          type: number
+          example: 17.99
+        subtotal:
+          type: number
+          example: 35.98
+        thumbnail:
+          type: string
+          example: https://covers.openlibrary.org/b/id/13301713-L.jpg
+
+    UnauthorizedResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: Unauthorized
+        message:
+          type: string
+          example: Debés iniciar sesión
+        code:
+          type: integer
+          example: 401

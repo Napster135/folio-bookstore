@@ -1,0 +1,617 @@
+paths:
+
+  /auth/register:
+    post:
+      summary: Registrar un nuevo usuario
+      description: >
+        Crea una cuenta nueva. Al registrarse se crea automáticamente un carrito vacío
+        asociado al usuario. El rol por defecto es `user`.
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+            example:
+              first_name: "Víctor"
+              last_name: "Pacheco"
+              email: "vpacheco@mail.com"
+              age: 25
+              password: "segura123"
+      responses:
+        "201":
+          description: Usuario registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: string
+                    example: Registered Succesfully!
+        "400":
+          description: Datos inválidos (campos faltantes, email mal formado, contraseña muy corta)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: El email ya está en uso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Error interno del servidor
+
+  /auth/login:
+    post:
+      summary: Iniciar sesión
+      description: >
+        Autentica al usuario con email y contraseña. Si las credenciales son correctas,
+        se crea una sesión en el servidor y se actualiza `lastLoginDate`.
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+            example:
+              email: "vpacheco@mail.com"
+              password: "segura123"
+      responses:
+        "200":
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Email o contraseña faltantes
+        "404":
+          description: Email o contraseña incorrectos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Error interno del servidor
+
+  /auth/logout:
+    get:
+      summary: Cerrar sesión
+      description: Destruye la sesión activa y redirige al login.
+      tags:
+        - Autenticación
+      security:
+        - sessionAuth: []
+      responses:
+        "302":
+          description: Redirige a /login
+
+  /auth/tickets:
+    get:
+      summary: Obtener pedidos del usuario autenticado
+      description: >
+        Devuelve el historial de tickets (compras completadas) del usuario en sesión.
+        Requiere autenticación.
+      tags:
+        - Tickets
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: Tickets obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketsResponse"
+        "401":
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedResponse"
+        "500":
+          description: Error interno del servidor
+
+  /auth/adminView:
+    get:
+      summary: Datos del panel de administración
+      description: >
+        Devuelve todos los usuarios y productos del sistema para el panel admin.
+        En modo demo, los emails de usuarios se ocultan parcialmente.
+        Requiere rol **admin**.
+      tags:
+        - Admin
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: Datos del panel obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminViewResponse"
+        "401":
+          description: Sin permisos de administrador
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedResponse"
+
+  /auth/adminView/users/{uid}:
+    put:
+      summary: Cambiar el rol de un usuario
+      description: >
+        Actualiza el rol de un usuario a `user`, `premium` o `admin`.
+        Requiere rol **admin**.
+      tags:
+        - Admin
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: uid
+          in: path
+          required: true
+          description: ID de MongoDB del usuario
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [uid, newRole]
+              properties:
+                uid:
+                  type: string
+                  description: ID del usuario
+                newRole:
+                  type: string
+                  enum: [user, premium, admin]
+                  description: Nuevo rol a asignar
+            example:
+              uid: "656d372669f3489a93048af0"
+              newRole: "premium"
+      responses:
+        "200":
+          description: Rol actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: string
+                    example: User role updated
+                  user:
+                    $ref: "#/components/schemas/UserDocument"
+        "401":
+          description: Sin permisos de administrador
+        "500":
+          description: Error interno del servidor
+
+    delete:
+      summary: Eliminar un usuario
+      description: Elimina un usuario por ID. Requiere rol **admin**.
+      tags:
+        - Admin
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: uid
+          in: path
+          required: true
+          description: ID de MongoDB del usuario
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Usuario eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: string
+                    example: User deleted
+        "401":
+          description: Sin permisos de administrador
+        "404":
+          description: Usuario no encontrado
+        "500":
+          description: Error interno del servidor
+
+  /auth/adminTickets:
+    get:
+      summary: Obtener todos los tickets (admin)
+      description: Devuelve todos los tickets de compra de todos los usuarios. Requiere rol **admin**.
+      tags:
+        - Admin
+        - Tickets
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: Tickets obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tickets:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TicketPopulated"
+        "401":
+          description: Sin permisos de administrador
+        "500":
+          description: Error interno del servidor
+
+  /auth/sendTokenToEmail:
+    post:
+      summary: Enviar token de restablecimiento de contraseña
+      description: >
+        Genera un token UUID con vencimiento de 1 hora y lo envía al email indicado.
+        El token es necesario para llamar a `PUT /auth/restorePassword`.
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: vpacheco@mail.com
+      responses:
+        "200":
+          description: Email enviado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Se ha enviado un correo electrónico con el código de restablecimiento
+        "500":
+          description: Error al enviar el email o al crear el token
+
+  /auth/restorePassword:
+    put:
+      summary: Restablecer contraseña
+      description: >
+        Verifica el token recibido por email y actualiza la contraseña del usuario.
+        El token expira en 1 hora desde que fue generado.
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code, newPassword]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: vpacheco@mail.com
+                code:
+                  type: string
+                  description: Token UUID recibido por email
+                  example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+                newPassword:
+                  type: string
+                  minLength: 6
+                  example: nuevaClave456
+      responses:
+        "200":
+          description: Contraseña actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: string
+                    example: User password updated
+        "400":
+          description: Token inválido, incorrecto o vencido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Código de restablecimiento inválido o vencido
+        "500":
+          description: Error interno del servidor
+
+  /auth/github:
+    get:
+      summary: Iniciar autenticación con GitHub
+      description: Redirige al flujo OAuth de GitHub. Solicita scope `user:email`.
+      tags:
+        - Autenticación
+      responses:
+        "302":
+          description: Redirige a GitHub para autorización
+
+  /auth/google:
+    get:
+      summary: Iniciar autenticación con Google
+      description: >
+        Redirige al flujo OAuth de Google. Disponible solo si `GOOGLE_CLIENT_ID`
+        está configurado en el servidor.
+      tags:
+        - Autenticación
+      responses:
+        "302":
+          description: Redirige a Google para autorización
+        "302 (error)":
+          description: Redirige a /login?error=google_not_configured si Google OAuth no está habilitado
+
+components:
+  schemas:
+
+    RegisterInput:
+      type: object
+      required: [first_name, last_name, email, age, password]
+      properties:
+        first_name:
+          type: string
+          example: Víctor
+        last_name:
+          type: string
+          example: Pacheco
+        email:
+          type: string
+          format: email
+          example: vpacheco@mail.com
+        age:
+          type: integer
+          example: 25
+        password:
+          type: string
+          minLength: 6
+          example: segura123
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: vpacheco@mail.com
+        password:
+          type: string
+          example: segura123
+
+    LoginResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        payload:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Login Success
+            cartId:
+              type: string
+              description: ID del carrito del usuario
+              example: 656d372669f3489a93048afe
+            userDate:
+              $ref: "#/components/schemas/UserDocument"
+        redirectTo:
+          type: string
+          example: /api/products
+
+    UserDocument:
+      type: object
+      description: Usuario almacenado en la base de datos
+      properties:
+        _id:
+          type: string
+          example: 656d372669f3489a93048af0
+        first_name:
+          type: string
+          example: Víctor
+        last_name:
+          type: string
+          example: Pacheco
+        email:
+          type: string
+          format: email
+          example: vpacheco@mail.com
+        age:
+          type: integer
+          example: 25
+        role:
+          type: string
+          enum: [user, premium, admin]
+          example: user
+        cartId:
+          type: string
+          description: ID del carrito asociado
+          example: 656d372669f3489a93048afe
+        lastLoginDate:
+          type: string
+          format: date-time
+          example: "2026-06-09T18:00:00.000Z"
+
+    TicketsResponse:
+      type: object
+      properties:
+        tickets:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketPopulated"
+        user:
+          $ref: "#/components/schemas/SessionUser"
+        isAdmin:
+          type: boolean
+          example: false
+        isPremium:
+          type: boolean
+          example: false
+
+    TicketPopulated:
+      type: object
+      description: Ticket de compra con purchaser populado
+      properties:
+        _id:
+          type: string
+          example: 64f3a1b2c9e7d3a5b8c0e1f2
+        code:
+          type: string
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        purchase_datetime:
+          type: string
+          format: date-time
+          example: "2026-06-09T19:30:00.000Z"
+        amount:
+          type: number
+          description: Total final en USD
+          example: 121.00
+        subtotal:
+          type: number
+          example: 134.45
+        discountRate:
+          type: number
+          example: 0.1
+        discountAmount:
+          type: number
+          example: 13.45
+        guestEmail:
+          type: string
+          description: Email del comprador invitado (null si tiene cuenta)
+          example: cliente@mail.com
+        purchaser:
+          type: object
+          description: Datos del comprador registrado (null en compras guest)
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            email:
+              type: string
+              format: email
+        items:
+          type: array
+          description: Snapshot de los productos comprados
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              quantity:
+                type: integer
+              unitPrice:
+                type: number
+              subtotal:
+                type: number
+
+    AdminViewResponse:
+      type: object
+      properties:
+        allUsers:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserDocument"
+        allProducts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductRef"
+        user:
+          $ref: "#/components/schemas/SessionUser"
+        isAdmin:
+          type: boolean
+          example: true
+
+    ProductRef:
+      type: object
+      description: Referencia mínima a un producto (usado en adminView)
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+        status:
+          type: boolean
+
+    SessionUser:
+      type: object
+      nullable: true
+      description: Datos de sesión del usuario autenticado
+      properties:
+        user:
+          type: string
+          description: Nombre completo (first_name + last_name)
+          example: Vic Pacheco
+        role:
+          type: string
+          enum: [user, premium, admin]
+          example: user
+        cartId:
+          type: string
+          example: 656d372669f3489a93048afe
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        payload:
+          type: string
+          example: Email ya en uso
+
+    UnauthorizedResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: Unauthorized
+        message:
+          type: string
+          example: Debés iniciar sesión
+        code:
+          type: integer
+          example: 401

@@ -1,0 +1,204 @@
+paths:
+
+  /api/guest/checkout:
+    post:
+      summary: Iniciar pago como invitado
+      description: >
+        Valida el stock de los productos del carrito guest y crea un PaymentIntent de Stripe.
+        No requiere autenticación.
+      tags:
+        - Invitado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  description: Productos del carrito guest
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: 6a0babb2c032477d7c24e67e
+                      quantity:
+                        type: integer
+                        example: 2
+            example:
+              items:
+                - _id: "6a0babb2c032477d7c24e67e"
+                  quantity: 2
+      responses:
+        "200":
+          description: PaymentIntent creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  client_secret:
+                    type: string
+                    example: pi_3OxZlL_secret_xyz
+                  total:
+                    type: number
+                    example: 35.98
+        "400":
+          description: Carrito vacío o sin stock disponible
+        "500":
+          description: Error interno del servidor
+
+  /api/guest/confirm:
+    post:
+      summary: Confirmar compra como invitado
+      description: >
+        Verifica el pago con Stripe, descuenta stock y genera el ticket.
+        Idempotente — si el `paymentIntentId` ya fue procesado, devuelve el ticket existente.
+        No requiere autenticación.
+      tags:
+        - Invitado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items, email, paymentIntentId]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      quantity:
+                        type: integer
+                email:
+                  type: string
+                  format: email
+                  example: cliente@mail.com
+                paymentIntentId:
+                  type: string
+                  example: pi_3OxZlL2eZvKYlo2C
+                name:
+                  type: string
+                  description: Nombre completo del cliente invitado
+                  example: Juan Pérez
+                phone:
+                  type: string
+                  example: "+54 9 11 1234-5678"
+                shippingAddress:
+                  type: string
+                  example: Av. Siempre Viva 742, Springfield, 1000
+                billingAddress:
+                  type: string
+                  example: Av. Siempre Viva 742, Springfield, 1000
+      responses:
+        "200":
+          description: Ticket ya existente (compra idempotente)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket:
+                    $ref: "#/components/schemas/TicketGuest"
+                  alreadyProcessed:
+                    type: boolean
+                    example: true
+        "201":
+          description: Compra confirmada y ticket generado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket:
+                    $ref: "#/components/schemas/TicketGuest"
+        "402":
+          description: El pago no fue aprobado por Stripe
+        "409":
+          description: Stock insuficiente o precio modificado durante el proceso
+        "500":
+          description: Error interno del servidor
+
+components:
+  schemas:
+
+    TicketGuest:
+      type: object
+      description: Ticket de compra generado para un invitado
+      properties:
+        _id:
+          type: string
+          example: 64f3a1b2c9e7d3a5b8c0e1f2
+        code:
+          type: string
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        purchase_datetime:
+          type: string
+          format: date-time
+          example: "2026-06-09T19:30:00.000Z"
+        amount:
+          type: number
+          example: 35.98
+        guestEmail:
+          type: string
+          example: cliente@mail.com
+        paymentIntentId:
+          type: string
+          example: pi_3OxZlL2eZvKYlo2C
+        customer:
+          $ref: "#/components/schemas/TicketCustomer"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketItem"
+
+    TicketCustomer:
+      type: object
+      description: Snapshot del cliente al momento de la compra (guest o registrado)
+      properties:
+        name:
+          type: string
+          example: Juan Pérez
+        email:
+          type: string
+          example: cliente@mail.com
+        phone:
+          type: string
+          example: "+54 9 11 1234-5678"
+        type:
+          type: string
+          enum: [guest, registered]
+          example: guest
+        shippingAddress:
+          type: string
+          example: Av. Siempre Viva 742, Springfield, 1000
+        billingAddress:
+          type: string
+          example: Av. Siempre Viva 742, Springfield, 1000
+
+    TicketItem:
+      type: object
+      description: Snapshot del producto al momento de la compra
+      properties:
+        title:
+          type: string
+          example: A Tale of Two Cities
+        quantity:
+          type: integer
+          example: 2
+        unitPrice:
+          type: number
+          example: 17.99
+        subtotal:
+          type: number
+          example: 35.98
+        thumbnail:
+          type: string
+          example: https://covers.openlibrary.org/b/id/13301713-L.jpg
